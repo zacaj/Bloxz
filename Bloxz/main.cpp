@@ -13,7 +13,6 @@
 #include <utility>
 using namespace std;
 #include "glfont2.h"
-#include <minwindef.h>
 #include <SDL/SDL_timer.h>
 typedef struct
 {
@@ -119,28 +118,42 @@ typedef struct
 vec2f *scoreVerts;
 
 #define MAXPAR 1024*16
-vec2f parp[MAXPAR];
+vec2f parp[MAXPAR][4];
 vec2f parv[MAXPAR];
-unsigned char parc[MAXPAR][4];
+float parc[MAXPAR][4];
 int nPar = 0;
 float parvx[32][32];
 float parvy[32][32];
 
 #define DEG2RAD 0.017453292519943295769236907684886
+void setParp(int i, float x, float y)
+{
+#define S .75
+	parp[i][0].x = x - S;
+	parp[i][0].y = y - S;
+	parp[i][1].x = x - S;
+	parp[i][1].y = y + S;
+	parp[i][2].x = x + S;
+	parp[i][2].y = y + S;
+	parp[i][3].x = x + S;
+	parp[i][3].y = y - S;
+}
 void randPars(vec2f pos, float r, float g, float b)
 {
 	for (int i = 0; i<rand() % 8 + 28; i++)
 	{
 		if (nPar >= MAXPAR)
-		{;
+		{
+			;
 			return;
 		}
 		float angle = rand() % 360;
 		angle *= DEG2RAD;
 		parv[nPar].x = sin(angle)*((rand() % 40)*.1 + 1) / 256;
 		parv[nPar].y = cos(angle)*((rand() % 40)*.1 + 1) / 256;
-		parp[nPar].x = pos.x + parv[nPar].x;
-		parp[nPar].y = pos.y + parv[nPar].y;
+		//parp[nPar].x = pos.x + parv[nPar].x;
+		//parp[nPar].y = pos.y + parv[nPar].y;
+		setParp(nPar, pos.x + parv[nPar].x, pos.y + parv[nPar].y);
 		parc[nPar][0] = r;
 		parc[nPar][1] = g;
 		parc[nPar][2] = b;
@@ -150,8 +163,9 @@ void randPars(vec2f pos, float r, float g, float b)
 }
 char* pathToFile(char *name, char *ext)
 {
-	char *ret = new char[strlen(name) + strlen(ext) + 3];
-	strcpy(ret, name);
+	char *ret = new char[strlen(name) + strlen(ext) + 30];
+	strcpy(ret, "");
+	strcat(ret, name);
 	strcat(ret, ext);
 	return ret;
 }
@@ -368,8 +382,8 @@ void init()
 		fclose(fp);
 		nPar = 0;
 	}
-	
-	if (current ==0 || fp==NULL)
+
+	if (current == 0 || fp == NULL)
 	{
 		playername = "Player";
 		for (int i = 0; i<3; i++)
@@ -461,7 +475,7 @@ void init()
 		uvs[nVert].y = 1;
 		nVert++;
 	}
-
+	printf("loaded\n");
 }
 int last = SDL_GetTicks();
 char name[100];
@@ -484,25 +498,29 @@ void update()
 		}
 		for (int i = 0; i<nPar; i++)
 		{
-			parp[i].x += parv[i].x;
-			parp[i].y += parv[i].y;
-			if (parc[i][3]<.01 || parp[i].x<-170 || parp[i].x>170 || parp[i].y<-200 || parp[i].y>200)
+			//parp[i][0].x+S += parv[i].x;
+			//parp[i][0].y+S += parv[i].y;
+			setParp(i, parp[i][0].x + S + parv[i].x, parp[i][0].y + S + parv[i].y);
+			if (parc[i][3]<.01 || parp[i][0].x + S<-170 || parp[i][0].x + S>170 || parp[i][0].y + S<-200 || parp[i][0].y + S>200)
 			{
 				nPar--;
-				parp[i] = parp[nPar];
+				parp[i][0] = parp[nPar][0];
+				parp[i][1] = parp[nPar][1];
+				parp[i][2] = parp[nPar][2];
+				parp[i][3] = parp[nPar][3];
 				parv[i] = parv[nPar];
 				parc[i][0] = parc[nPar][0];
 				parc[i][1] = parc[nPar][1];
 				parc[i][2] = parc[nPar][2];
 				parc[i][3] = parc[nPar][3];
 			}
-			if (blokAt((int)(parp[i].x + 160) / 32, (int)(parp[i].y + 160) / 32).type>0)
+			if (blokAt((int)(parp[i][0].x + S + 160) / 32, (int)(parp[i][0].y + S + 160) / 32).type>0)
 			{
 				float tx, ty, tx2, ty2;
-				tx = (parp[i].x + 160) - ((int)(parp[i].x + 160) / 32) * 32;
-				ty = (parp[i].y + 160) - ((int)(parp[i].y + 160) / 32) * 32;
-				tx2 = (parp[i].x + 160) - ((int)(parp[i].x + 160 + 32) / 32) * 32;
-				ty2 = (parp[i].y + 160) - ((int)(parp[i].y + 160 + 32) / 32) * 32;
+				tx = (parp[i][0].x + S + 160) - ((int)(parp[i][0].x + S + 160) / 32) * 32;
+				ty = (parp[i][0].y + S + 160) - ((int)(parp[i][0].y + S + 160) / 32) * 32;
+				tx2 = (parp[i][0].x + S + 160) - ((int)(parp[i][0].x + S + 160 + 32) / 32) * 32;
+				ty2 = (parp[i][0].y + S + 160) - ((int)(parp[i][0].y + S + 160 + 32) / 32) * 32;
 				tx = min(fabs(tx), fabs(tx2));
 				ty = min(fabs(ty), fabs(ty2));
 				if (tx<ty)
@@ -520,7 +538,10 @@ void update()
 				parv[i].x *= .8;
 				parv[i].y *= .8;
 				parc[i][3] *= .6;
-				parp[i].x = -500;
+				parp[i][0].x = -500;
+				parp[i][1].x = -500;
+				parp[i][2].x = -500;
+				parp[i][3].x = -500;
 			}
 			parc[i][3] -= .01;
 		}
@@ -530,12 +551,12 @@ void update()
 	glEnableClientState(GL_COLOR_ARRAY);
 	glVertexPointer(2, GL_FLOAT, 0, parp);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glColorPointer(4, GL_UNSIGNED_BYTE, 0, parc);
+	glColorPointer(4, GL_FLOAT, 0, parc);
 	//glEnable(GL_POINT_SPRITE_OES);
 	// glTexEnvf(GL_POINT_SPRITE_OES,GL_COORD_REPLACE_OES,GL_TRUE);
-	glPointSize(1.5);
+	//glPointSize(1.5);
 	glEnable(GL_POINT_SMOOTH);
-	glDrawArrays(GL_POINTS, 0, nPar);
+	glDrawArrays(GL_QUADS, 0, nPar * 4);
 	// glDisable(GL_POINT_SPRITE_OES);
 	// glTexEnvf(GL_POINT_SPRITE_OES,GL_COORD_REPLACE_OES,GL_FALSE);
 	glDisableClientState(GL_COLOR_ARRAY);
@@ -787,7 +808,7 @@ void update()
 		mode = 0;
 		firing = 0;
 	}
-	if (gamemode == 3 && menu==0)
+	if (gamemode == 3 && menu == 0)
 	{
 		timeleft -= SDL_GetTicks() - last;
 		totaltime += SDL_GetTicks() - last;
@@ -919,7 +940,7 @@ void update()
 		glScalef(1, -1, 1);
 		glColor3f(1, 1, 1);
 		font.Begin();
-		font.DrawString(name,.75, -22, 28);
+		font.DrawString(name, .75, -22, 28);
 		if (nBloxz<1)
 			font.DrawStringC("COMPLETE!", 1.8, 0, -120);
 		else
@@ -1271,8 +1292,9 @@ void checkexplode()
 			for (int x = 0; x<32; x++)
 			if (nPar<MAXPAR)
 			{
-				parp[nPar].x = (i - 5)*BLOKSIZE + x;
-				parp[nPar].y = (j - 5)*BLOKSIZE + y;
+				//parp[nPar].x = (i - 5)*BLOKSIZE + x;
+				//parp[nPar].y = (j - 5)*BLOKSIZE + y;
+				setParp(nPar, (i - 5)*BLOKSIZE + x, (j - 5)*BLOKSIZE + y);
 				rgba_t color = GetPixelAt(imgs[level[i][j].type - 1], x * 2, 63 - y * 2);
 				if (i == 0)
 				{
@@ -1315,15 +1337,16 @@ void checkexplode()
 			for (int x = 0; x<32; x++)
 			if (nPar<MAXPAR)
 			{
-				parp[nPar].x = (i - 5)*BLOKSIZE + x;
-				parp[nPar].y = (j - 5)*BLOKSIZE + y;
+				//	parp[nPar].x = (i - 5)*BLOKSIZE + x;
+				//parp[nPar].y = (j - 5)*BLOKSIZE + y;
+				setParp(nPar, (i - 5)*BLOKSIZE + x, (j - 5)*BLOKSIZE + y);
 				rgba_t color = GetPixelAt(imgs[level[i][j].type - 1], x * 2, 63 - y * 2);
 				parv[nPar].x = parvx[x][y];
 				parv[nPar].y = parvy[x][y];
-				parc[nPar][0] = color.r;
-				parc[nPar][1] = color.g;
-				parc[nPar][2] = color.b;
-				parc[nPar][3] = color.a;
+				parc[nPar][0] = (float)color.r/255;
+				parc[nPar][1] = (float)color.g / 255;
+				parc[nPar][2] = (float)color.b / 255;
+				parc[nPar][3] = (float)color.a / 255;
 				nPar++;
 			}
 			else break;
