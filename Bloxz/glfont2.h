@@ -146,7 +146,7 @@ public:
 		float uvs[4000][2];
 		int at=0;
 		//Loop through characters
-		for (i = text; *i != (T)'\0'; i++)
+		for (i = text; *i != (T)'\0' && i - text<length; i++)
 		{
 			//Make sure character is in range
 			if (*i < header.start_char || *i > header.end_char)
@@ -196,7 +196,7 @@ public:
 
 		glVertexPointer(2,GL_FLOAT,0,vert);
 		glTexCoordPointer(2,GL_FLOAT,0,uvs);
-		glDrawArrays(GL_TRIANGLE_STRIP,0,4000);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 * length);
 	}
 /*
 	//Template function to draw a std::basic_string
@@ -258,7 +258,7 @@ public:
 		int at=0;
 		float half=0;
 		//Loop through characters
-		for (i = text; *i != (T)'\0'; i++)
+		for (i = text; *i != (T)'\0' && i - text<length; i++)
 		{
 			//Make sure character is in range
 			if (*i < header.start_char || *i > header.end_char)
@@ -301,7 +301,7 @@ public:
 		glTranslatef(-half,0,0);
 		glVertexPointer(2,GL_FLOAT,0,vert);
 		glTexCoordPointer(2,GL_FLOAT,0,uvs);
-		glDrawArrays(GL_TRIANGLE_STRIP,0,4000);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 * length);
 		glPopMatrix();
 	}
 	//Template function to output a scaled character array
@@ -319,7 +319,7 @@ public:
 		int at=0;
 		float half=0;
 		//Loop through characters
-		for (i = text; *i != (T)'\0'; i++)
+		for (i = text; *i != (T)'\0' && i - text<length; i++)
 		{
 			//Make sure character is in range
 			if (*i < header.start_char || *i > header.end_char)
@@ -362,7 +362,7 @@ public:
 		glTranslatef(-half,0,0);
 		glVertexPointer(2,GL_FLOAT,0,vert);
 		glTexCoordPointer(2,GL_FLOAT,0,uvs);
-		glDrawArrays(GL_TRIANGLE_STRIP,0,4000);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 * length);
 		glPopMatrix();
 	}
 	
@@ -381,7 +381,7 @@ public:
 		int at=0;
 
 		//Loop through characters
-		for (i = text; *i != (T)'\0'; i++)
+		for (i = text; *i != (T)'\0' && i-text<length; i++)
 		{
 			//Make sure character is in range
 			if (*i < header.start_char || *i > header.end_char)
@@ -422,7 +422,7 @@ public:
 		
 		glVertexPointer(2,GL_FLOAT,0,vert);
 		glTexCoordPointer(2,GL_FLOAT,0,uvs);
-		glDrawArrays(GL_TRIANGLE_STRIP,0,4000);
+		glDrawArrays(GL_TRIANGLE_STRIP,0,4*length);
 	}
    /* //Template function to output a scaled character array
 	template<class T> void DrawStringRight (const T *text, float scalar,

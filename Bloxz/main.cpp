@@ -913,13 +913,13 @@ void update()
 	else if (menu == 2)
 	{
 		glColor4f(1, 1, 1, 1);
-		if (score>getLow(gamemode - 1))
+		if (score>getLow(gamemode - 1) || 1)
 			rectline(-22, -28, 150, 30);
 		font.Begin();
 		glScalef(1, -1, 1);
 		glColor3f(1, 1, 1);
 		font.Begin();
-		font.DrawString(name, -22, -28);
+		font.DrawString(name,.75, -22, 28);
 		if (nBloxz<1)
 			font.DrawStringC("COMPLETE!", 1.8, 0, -120);
 		else

@@ -6,6 +6,7 @@
 
 #include "main.h"
 #include <SDL/SDL_video.h>
+#include <string.h>
 float min(float,float);
 float max(float,float);
 extern int tx, ty, tim;
@@ -15,6 +16,8 @@ extern int hst;
 extern int gamemode;
 extern int score, highscore[3];
 extern char name[100];
+extern int timeleft;
+extern char *playername;
 int nameat = 0;
 struct  vec2
 {
@@ -36,6 +39,7 @@ int main(int argc, char* argv[])
 	SDL_GL_CreateContext(window);
 	bool done = 0;
 	init();
+	
 	int start = SDL_GetTicks();
 	while (!done)
 	{
@@ -50,13 +54,21 @@ int main(int argc, char* argv[])
 			case SDL_KEYDOWN:
 				if (e.key.keysym.sym == SDLK_ESCAPE)
 					done = 1;
-				else if (menu == 5)
+				else if (menu == 2)
 				{
 					if (e.key.keysym.sym == SDLK_BACKSPACE)
 					{
-						name[nameat--] = 0;
+						name[--nameat] = 0;
 					}
-					else if (e.key.keysym.sym < 128)
+					if (e.key.keysym.sym == SDLK_RETURN)
+					{
+						menu = 1;
+						playername = new char(strlen(name) + 2);
+						strcpy(playername, name);
+						addHighscore();
+						newlevel();
+					}
+					else if (e.key.keysym.sym < 128 && e.key.keysym.sym>=32)
 					{
 						name[nameat++] = e.key.keysym.sym;
 						name[nameat] = 0;
@@ -163,8 +175,11 @@ int main(int argc, char* argv[])
 					if (point.y>320)
 					{
 //						if (textbox == nil)
-							newlevel();
 						menu = 1;
+						playername = new char(strlen(name) + 2);
+						strcpy(playername, name);
+						addHighscore();
+						newlevel();
 					}
 				}
 				else if (menu == 3)
@@ -187,7 +202,12 @@ int main(int argc, char* argv[])
 					}
 				}
 				else if (menu == 4)//gameover
+				{
+					name[0] = 0;
+					strcpy(name, playername);
+					nameat = strlen(name);
 					menu = 2;
+				}
 				else if (menu == 5)//high
 				{
 					if (point.x<26 && point.y>454)
